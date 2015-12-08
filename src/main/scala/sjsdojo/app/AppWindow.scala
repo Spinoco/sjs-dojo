@@ -1,9 +1,9 @@
 package sjsdojo.app
 
 import org.scalajs.dom.Element
-import react.React
-import sjsdojo.todo.{TodoList, TodoItem}
 import react.jsbridge.ReactElement._
+import react.React
+import sjsdojo.HelloWorld
 
 import scala.scalajs.js.JSApp
 import scala.scalajs.js.annotation.JSExport
@@ -18,7 +18,7 @@ object AppWindow extends JSApp {
   def main(): Unit = {
 
     val node = org.scalajs.dom.window.document.getElementsByClassName("todoapp")
-    val reactElement = TodoList(Seq(TodoItem(0, "Coding Dojo!", false))).toElement
+    val reactElement = HelloWorld("Spinoco!").toElement
     React.render(reactElement, node(0).asInstanceOf[Element])
   }
 }

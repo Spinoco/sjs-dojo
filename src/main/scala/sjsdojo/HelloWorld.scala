@@ -1,8 +1,8 @@
 package sjsdojo
 
-import react.RenderAction
+import react.{ReactAction, ReactEvent, RenderAction}
 
-import scalaz.Equal
+import scalaz.{\/-, -\/, \/, Equal}
 
 /**
   * Created with IntelliJ IDEA.
@@ -14,15 +14,38 @@ case class HelloWorld(msg: String)
 
 object HelloWorld {
 
-  implicit val equal: Equal[HelloWorld] = Equal.equalA
-  implicit lazy val factory = react.display0("HelloWorld")(impl.render).factory
+  implicit lazy val factory = react.withState("HelloWorld")(impl.init){case e: ReactEvent => e}(impl.process).factory
+
+  case class HelloWorldState(msg: String)
+  case class MsgChanged(value: String) extends ReactEvent
 
   object impl {
 
-    def render(props: HelloWorld): RenderAction = react.action.render{ cmp =>
+    def init(props: HelloWorld): HelloWorldState = {
+      HelloWorldState(props.msg)
+    }
+
+    def process(s: HelloWorldState, update: HelloWorld \/ ReactEvent): (HelloWorldState, ReactAction) = {
+      update match {
+        case -\/(p) =>
+          val ns = init(p)
+          ns -> render(ns)
+
+        case \/-(MsgChanged(value)) =>
+          val ns = s.copy(msg = value)
+          ns -> render(ns)
+      }
+    }
+
+    def render(s: HelloWorldState): RenderAction = react.action.render{implicit cmp =>
       import react.dom._
 
-      div()(text(s"Hello World: ${props.msg}"))
+      div()(
+        div()(
+          input("value" -> s.msg, "onChange" -> valueChanged(MsgChanged))()
+        )
+      , text(s"Hello World: ${s.msg}")
+      )
     }
   }
 }
